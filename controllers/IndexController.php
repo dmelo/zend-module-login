@@ -66,19 +66,25 @@ class Auth_IndexController extends DZend_Controller_Action
                     'error'
                 );
             } else {
-                $this->_logger->info("out of the IF");
+                $this->_logger->info("out of the IF authority: " . $authority);
+                $this->_logger->debug('---- A');
                 $result = null;
+                $this->_logger->debug('---- B');
                 if ('db' === $authority) {
+                $this->_logger->debug('---- C');
                     $result = $this->_authModel->authenticate(
                         $params['email'], $params['password']
                     );
+                $this->_logger->debug('---- D');
                 } elseif ('facebook' === $authority) {
                     $result = $this->_authModel->authenticateFacebook($params['email'], $params['name']);
                 }
+                $this->_logger->debug('---- E');
 
                 $this->_logger->debug('IndexController::login ' . Zend_Auth::getInstance()->getIdentity());
 
                 if (Zend_Auth_Result::SUCCESS === $result->getCode()) {
+                    $this->_logger->debug('IndexController::login auth success');
                     $this->_helper->redirector($this->_userModel->findByEmail(Zend_Auth::getInstance()->getIdentity())->getAction(), 'index', 'default');
                 } else {
                     $message = array(
@@ -145,8 +151,9 @@ class Auth_IndexController extends DZend_Controller_Action
                             'User registered. Check your '
                             . 'email to activate your account.'
                         ), 'success');
-                        if (method_exists($userRow, 'postRegister'))
+                        if (method_exists($userRow, 'postRegister')) {
                             $userRow->postRegister();
+                        }
                     } else {
                         $message = array($this->view->t(
                             'An error occurred. It was not possible to send '
@@ -155,17 +162,19 @@ class Auth_IndexController extends DZend_Controller_Action
                         $this->_userModel->deleteByEmail($params['email']);
                     }
                 }
-                else
+                else {
                     $message = array($this->view->t(
                         'Some error occurred, please try again'
                     ), 'error');
+                }
             }
 
             if($message[1] !== 'success')
                 $this->view->form = $form;
             $this->view->message = $message;
-        } else
+        } else {
             $this->view->form = $form;
+        }
     }
 
     public function activateAction()
