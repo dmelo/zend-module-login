@@ -1,7 +1,7 @@
 <div class="container regular">
     <?
     if(isset($this->message) && null !== $this->message)
-        echo $this->statusMessage($this->message);
+        echo $this->statusMessage($this->message, true);
     ?>
     <?= $this->form; ?>
 </div>
