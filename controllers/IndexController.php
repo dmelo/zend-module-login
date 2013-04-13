@@ -77,20 +77,35 @@ class Auth_IndexController extends DZend_Controller_Action
                     );
                 $this->_logger->debug('---- D');
                 } elseif ('facebook' === $authority) {
-                    $result = $this->_authModel->authenticateFacebook($params['email'], $params['name']);
+                    $result = $this->_authModel->authenticateFacebook(
+                        $params['email'], $params['name']
+                    );
                 }
                 $this->_logger->debug('---- E');
 
-                $this->_logger->debug('IndexController::login ' . Zend_Auth::getInstance()->getIdentity());
+                $this->_logger->debug(
+                    'IndexController::login ' . Zend_Auth::getInstance()
+                        ->getIdentity()
+                );
 
                 if (Zend_Auth_Result::SUCCESS === $result->getCode()) {
-                    $this->_logger->debug('IndexController::login auth success');
-                    $this->_helper->redirector($this->_userModel->findByEmail(Zend_Auth::getInstance()->getIdentity())->getAction(), 'index', 'default');
+                    $this->_logger->debug(
+                        'IndexController::login auth success'
+                    );
+                    $this->_helper->redirector(
+                        $this->_userModel->findByEmail(
+                            Zend_Auth::getInstance()->getIdentity()
+                        )->getAction(), 'index', 'default'
+                    );
                 } else {
                     $message = array(
                         $this->view->t("Wrong password."), "error"
                     );
                 }
+            }
+        } else {
+            if (array_key_exists('message', $params)) {
+                $message = array($params['message'], 'info');
             }
         }
 
@@ -161,8 +176,7 @@ class Auth_IndexController extends DZend_Controller_Action
                         ), 'error');
                         $this->_userModel->deleteByEmail($params['email']);
                     }
-                }
-                else {
+                } else {
                     $message = array($this->view->t(
                         'Some error occurred, please try again'
                     ), 'error');
@@ -186,14 +200,28 @@ class Auth_IndexController extends DZend_Controller_Action
 
         $userRow = $this->_userModel->findByEmail($email);
         $message = null;
-        if (
-            null === $userRow ||
-            '' === $userRow->token ||
-            $userRow->token !== $token
-        ) {
-            $message = array(
-                $this->view->t('The email %s cannot be activated', $email),
-                'error'
+        if (null === $userRow) {
+            $this->_helper->redirector(
+                'login', 'index', 'Auth', array(
+                    'message' => $this->view->translate
+                        ->_('The email %s is not registered.', $email)
+                )
+            );
+        } elseif (in_array($userRow->token, array('', null))) {
+            $this->_helper->redirector(
+                'login', 'index', 'Auth', array(
+                    'message' => $this->view->translate
+                        ->_(
+                            'The email %s is already active. Try to login.',
+                            $email
+                        )
+                )
+            );
+        } elseif ($userRow->token !== $token) {
+            $this->_helper->redirector(
+                'login', 'index', 'Auth', array(
+                    'message' => $this->view->t('Wrong request.')
+                )
             );
         } else {
             $userRow->token = '';
