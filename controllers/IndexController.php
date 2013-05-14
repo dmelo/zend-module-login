@@ -65,6 +65,8 @@ class Auth_IndexController extends DZend_Controller_Action
                     ),
                     'error'
                 );
+
+                $this->_sendActivationEmail($userRow);
             } else {
                 $this->_logger->info("out of the IF authority: " . $authority);
                 $this->_logger->debug('---- A');
@@ -134,6 +136,29 @@ class Auth_IndexController extends DZend_Controller_Action
         }
     }
 
+    protected function _sendActivationEmail(DbTable_UserRow $userRow)
+    {
+        $message = array();
+
+        if ($this->_userModel->sendActivateAccountEmail($userRow)) {
+            $message = array($this->view->t(
+                'User registered. Check your '
+                . 'email to activate your account.'
+            ), 'success');
+            if (method_exists($userRow, 'postRegister')) {
+                $userRow->postRegister();
+            }
+        } else {
+            $message = array($this->view->t(
+                'An error occurred. It was not possible to send '
+                . 'the email. Plase try again'
+            ), 'error');
+            $this->_userModel->deleteByEmail($params['email']);
+        }
+
+        return $message;
+    }
+
     /**
      * registerAction Creates a new user account.
      *
@@ -161,21 +186,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     ) === true
                 ) {
                     $userRow = $this->_userModel->findByEmail($params['email']);
-                    if ($this->_userModel->sendActivateAccountEmail($userRow)) {
-                        $message = array($this->view->t(
-                            'User registered. Check your '
-                            . 'email to activate your account.'
-                        ), 'success');
-                        if (method_exists($userRow, 'postRegister')) {
-                            $userRow->postRegister();
-                        }
-                    } else {
-                        $message = array($this->view->t(
-                            'An error occurred. It was not possible to send '
-                            . 'the email. Plase try again'
-                        ), 'error');
-                        $this->_userModel->deleteByEmail($params['email']);
-                    }
+                    $message = $this->_sendActivationEmail($userRow);
                 } else {
                     $message = array($this->view->t(
                         'Some error occurred, please try again'
