@@ -58,7 +58,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     'error'
                 );
 
-            } elseif ('' != $userRow->token) {
+            } elseif ('' != $userRow->token && 'db' == $authority) {
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
@@ -314,8 +314,9 @@ class Auth_IndexController extends DZend_Controller_Action
                 }
                 $this->view->message = $message;
 
-                if('error' === $message[1])
+                if('error' === $message[1]) {
                     $this->view->form = $form;
+                }
             }
             else
                 $this->view->form = $form;
