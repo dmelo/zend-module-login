@@ -130,6 +130,7 @@ class Auth_IndexController extends DZend_Controller_Action
     {
         $auth = Zend_Auth::getInstance();
         if ($auth->hasIdentity()) {
+            DZend_Session_Namespace::delete('user');
             unset($this->_session->user);
             $auth->clearIdentity();
             $this->_helper->redirector('login', 'index', 'Auth');
