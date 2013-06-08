@@ -318,7 +318,7 @@ class Auth_IndexController extends DZend_Controller_Action
                 }
                 $this->view->message = $message;
 
-                if('error' === $message[1]) {
+                if ('error' === $message[1]) {
                     $this->view->form = $form;
                 }
             }
