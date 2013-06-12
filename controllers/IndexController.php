@@ -29,6 +29,7 @@ class Auth_IndexController extends DZend_Controller_Action
     {
         parent::init();
         $this->_userModel = new User();
+        $this->view->locale = Zend_Registry::get('locale');
     }
 
     /**
