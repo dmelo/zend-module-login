@@ -49,17 +49,21 @@ class Auth_IndexController extends DZend_Controller_Action
             $this->_request->isPost() &&
             $form->isValid($this->_request->getParams())
         ) {
+            $this->_logger->debug('Auth/IndexController::loginAction A0');
+            $userRow = $this->_userModel->findByEmail($params['email']);
+            $this->_logger->debug('Auth/IndexController::loginAction' . $userRow->token);
+            $this->_logger->debug('Auth/IndexController::loginAction' . print_r($userRow, true) . $authority);
             if (
-                ($userRow =
-                    $this->_userModel->findByEmail($params['email'])) === null
-                && 'db' === $authority
+                null === $userRow && 'db' === $authority
             ) {
+                $this->_logger->debug('Auth/IndexController::loginAction email not found');
                 $message = array(
                     $this->view->t("Email not found. Are you new here?"),
                     'error'
                 );
 
             } elseif ('' != $userRow->token && 'db' == $authority) {
+                $this->_logger->debug('Auth/IndexController::loginAction token is not null');
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
@@ -75,12 +79,12 @@ class Auth_IndexController extends DZend_Controller_Action
                 $this->_logger->debug('---- B');
                 if ('db' === $authority) {
                 $this->_logger->debug('---- C');
-                    $result = $this->_authModel->authenticate(
+                    $result = $this->_auth_Model_AuthModel->authenticate(
                         $params['email'], $params['password']
                     );
                 $this->_logger->debug('---- D');
                 } elseif ('facebook' === $authority) {
-                    $result = $this->_authModel->authenticateFacebook(
+                    $result = $this->_auth_Model_AuthModel->authenticateFacebook(
                         $params['email'], $params['name']
                     );
                 }
@@ -96,10 +100,9 @@ class Auth_IndexController extends DZend_Controller_Action
                         'IndexController::login auth success'
                     );
                     $this->_helper->redirector(
-                        $this->_userModel->findByEmail(
-                            Zend_Auth::getInstance()->getIdentity()
-                        )->getAction(), 'index', 'default'
+                        'index', 'index', 'default'
                     );
+                    $this->_logger->debug('---- F - redirected to index/index');
                 } else {
                     $message = array(
                         $this->view->t("Wrong password."), "error"
@@ -113,13 +116,16 @@ class Auth_IndexController extends DZend_Controller_Action
         }
 
         $this->view->form = $form;
-        if(null === $message && $this->_request->getParam('activated') == 1)
+        if(null === $message && $this->_request->getParam('activated') == 1) {
             $message = array(
                 $this->view->t('Your account is active, you can LOGIN now'),
                 'success'
             );
-        if(null !== $message)
+        }
+
+        if(null !== $message) {
             $this->view->message = $message;
+        }
     }
 
     /**
