@@ -41,29 +41,25 @@ class Auth_IndexController extends DZend_Controller_Action
     {
         $form = new Auth_Model_Form_Login();
         $params = $this->_request->getParams();
-        $authority = array_key_exists('authority', $params) ?
-            $params['authority'] : 'db';
+        $authority = !array_key_exists('authority', $params) || '' == $params['authority'] ? 'db' : $params['authority'];
         $message = null;
+        $this->view->form = $form;
+        $isValid = $form->isValid($params);
 
         if (
             $this->_request->isPost() &&
-            $form->isValid($this->_request->getParams())
+            $isValid
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
             $userRow = $this->_userModel->findByEmail($params['email']);
-            $this->_logger->debug('Auth/IndexController::loginAction' . $userRow->token);
-            $this->_logger->debug('Auth/IndexController::loginAction' . print_r($userRow, true) . $authority);
             if (
                 null === $userRow && 'db' === $authority
             ) {
-                $this->_logger->debug('Auth/IndexController::loginAction email not found');
                 $message = array(
                     $this->view->t("Email not found. Are you new here?"),
                     'error'
                 );
-
             } elseif ('' != $userRow->token && 'db' == $authority) {
-                $this->_logger->debug('Auth/IndexController::loginAction token is not null');
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
@@ -73,22 +69,20 @@ class Auth_IndexController extends DZend_Controller_Action
 
                 $this->_sendActivationEmail($userRow);
             } else {
-                $this->_logger->info("out of the IF authority: " . $authority);
-                $this->_logger->debug('---- A');
+                // $this->_logger->info("out of the IF authority: " . $authority);
+                // $this->_logger->debug('---- A');
                 $result = null;
-                $this->_logger->debug('---- B');
+                var_dump($authority);
+                // $this->_logger->debug('---- B');
                 if ('db' === $authority) {
-                $this->_logger->debug('---- C');
                     $result = $this->_auth_Model_AuthModel->authenticate(
                         $params['email'], $params['password']
                     );
-                $this->_logger->debug('---- D');
                 } elseif ('facebook' === $authority) {
                     $result = $this->_auth_Model_AuthModel->authenticateFacebook(
                         $params['email'], $params['name']
                     );
                 }
-                $this->_logger->debug('---- E');
 
                 $this->_logger->debug(
                     'IndexController::login ' . Zend_Auth::getInstance()
@@ -99,9 +93,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     $this->_logger->debug(
                         'IndexController::login auth success'
                     );
-                    $this->_helper->redirector(
-                        'index', 'index', 'default'
-                    );
+                    $this->_helper->redirector('index', 'index', 'default');
                     $this->_logger->debug('---- F - redirected to index/index');
                 } else {
                     $message = array(
@@ -115,8 +107,8 @@ class Auth_IndexController extends DZend_Controller_Action
             }
         }
 
-        $this->view->form = $form;
         if(null === $message && $this->_request->getParam('activated') == 1) {
+            $this->_logger->debug('---- Y - end');
             $message = array(
                 $this->view->t('Your account is active, you can LOGIN now'),
                 'success'
@@ -126,6 +118,8 @@ class Auth_IndexController extends DZend_Controller_Action
         if(null !== $message) {
             $this->view->message = $message;
         }
+
+        // $this->_logger->debug('---- Z - end');
     }
 
     /**

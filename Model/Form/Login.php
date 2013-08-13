@@ -32,6 +32,7 @@ class Auth_Model_Form_Login extends DZend_Form
         $e = new Zend_Form_Element_Hidden('authority');
         $e->setValue('db');
         $this->addElement($e);
+        $this->setDefault('authority', 'db');
 
         $e = new Zend_Form_Element_Hidden('name');
         $this->addElement($e);
@@ -39,5 +40,6 @@ class Auth_Model_Form_Login extends DZend_Form
         $this->setMethod('post');
         $this->setName('login');
         $this->setAction('/Auth/index/login');
+
     }
 }
