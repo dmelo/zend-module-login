@@ -1,4 +1,4 @@
-<?php
+<?php;
 
 /**
  * Auth_IndexController
@@ -129,12 +129,10 @@ class Auth_IndexController extends DZend_Controller_Action
      */
     public function logoutAction()
     {
-        DZend_Session_Namespace::get('user');
         $auth = Zend_Auth::getInstance();
         if ($auth->hasIdentity()) {
             $auth->clearIdentity();
-            DZend_Session_Namespace::delete('user');
-            DZend_Session_Namespace::close();
+            DZend_Session_Namespace::delete();
             $this->_helper->redirector('login', 'index', 'Auth');
         } else {
             DZend_Session_Namespace::close();
