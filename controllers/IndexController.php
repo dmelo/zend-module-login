@@ -41,7 +41,8 @@ class Auth_IndexController extends DZend_Controller_Action
     {
         $form = new Auth_Model_Form_Login();
         $params = $this->_request->getParams();
-        $authority = !array_key_exists('authority', $params) || '' == $params['authority'] ? 'db' : $params['authority'];
+        $authority = !array_key_exists('authority', $params)
+            || '' == $params['authority'] ? 'db' : $params['authority'];
         $message = null;
         $this->view->form = $form;
         $isValid = $form->isValid($params);
@@ -69,17 +70,16 @@ class Auth_IndexController extends DZend_Controller_Action
 
                 $this->_sendActivationEmail($userRow);
             } else {
-                // $this->_logger->info("out of the IF authority: " . $authority);
-                // $this->_logger->debug('---- A');
+
                 $result = null;
                 var_dump($authority);
-                // $this->_logger->debug('---- B');
                 if ('db' === $authority) {
                     $result = $this->_auth_Model_AuthModel->authenticate(
                         $params['email'], $params['password']
                     );
                 } elseif ('facebook' === $authority) {
-                    $result = $this->_auth_Model_AuthModel->authenticateFacebook(
+                    $result = $this->_auth_Model_AuthModel
+                    ->authenticateFacebook(
                         $params['email'], $params['name']
                     );
                 }
@@ -94,7 +94,6 @@ class Auth_IndexController extends DZend_Controller_Action
                         'IndexController::login auth success'
                     );
                     $this->_helper->redirector('index', 'index', 'default');
-                    $this->_logger->debug('---- F - redirected to index/index');
                 } else {
                     $message = array(
                         $this->view->t("Wrong password."), "error"
@@ -107,15 +106,14 @@ class Auth_IndexController extends DZend_Controller_Action
             }
         }
 
-        if(null === $message && $this->_request->getParam('activated') == 1) {
-            $this->_logger->debug('---- Y - end');
+        if (null === $message && $this->_request->getParam('activated') == 1) {
             $message = array(
                 $this->view->t('Your account is active, you can LOGIN now'),
                 'success'
             );
         }
 
-        if(null !== $message) {
+        if (null !== $message) {
             $this->view->message = $message;
         }
 
