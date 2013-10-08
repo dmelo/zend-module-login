@@ -39,6 +39,7 @@ class Auth_IndexController extends DZend_Controller_Action
      */
     public function loginAction()
     {
+
         $form = new Auth_Model_Form_Login();
         $params = $this->_request->getParams();
         $authority = !array_key_exists('authority', $params)
@@ -47,20 +48,24 @@ class Auth_IndexController extends DZend_Controller_Action
         $this->view->form = $form;
         $isValid = $form->isValid($params);
 
+
         if (
             $this->_request->isPost() &&
             $isValid
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
             $userRow = $this->_userModel->findByEmail($params['email']);
-            if (
+
+		if (
                 null === $userRow && 'db' === $authority
             ) {
+
                 $message = array(
                     $this->view->t("Email not found. Are you new here?"),
                     'error'
                 );
-            } elseif ('' != $userRow->token && 'db' == $authority) {
+
+            } elseif ('' != $usfindRowByEmailerRow->token && 'db' == $authority) {
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
@@ -70,6 +75,7 @@ class Auth_IndexController extends DZend_Controller_Action
 
                 $this->_sendActivationEmail($userRow);
             } else {
+
 
                 $result = null;
                 var_dump($authority);
@@ -167,6 +173,25 @@ class Auth_IndexController extends DZend_Controller_Action
      */
     public function registerAction()
     {
+        $request = $this->getRequest();
+        $form = new Form_CompanyRequest();
+        if ($this->getRequest()->isPost())
+        {
+            if ($form->isValid($request->getPost()))
+            {
+		$protocolo = $this->_ProtocoloModel->generate();
+                $data = $request->getPost();
+                $data['protocolo'] = $protocolo['id'];
+                $data['protocolo_numero'] = $protocolo['numero'];
+
+		$this->_CompanyModel->save($data);
+		$this->view->form = new Form_Enviado();
+		return;
+            }
+        }
+        $this->view->form = $form;
+
+/*
         $form = new Auth_Model_Form_Register();
         $message = null;
         $params = $this->_request->getParams();
@@ -201,6 +226,7 @@ class Auth_IndexController extends DZend_Controller_Action
         } else {
             $this->view->form = $form;
         }
+*/
     }
 
     public function activateAction()
