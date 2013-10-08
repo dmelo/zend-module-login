@@ -45,11 +45,10 @@ class Auth_IndexController extends DZend_Controller_Action
             || '' == $params['authority'] ? 'db' : $params['authority'];
         $message = null;
         $this->view->form = $form;
-        $isValid = $form->isValid($params);
 
         if (
             $this->_request->isPost() &&
-            $isValid
+            $form->isValid($params)
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
             $userRow = $this->_userModel->findByEmail($params['email']);
