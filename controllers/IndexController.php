@@ -74,7 +74,6 @@ class Auth_IndexController extends DZend_Controller_Action
             } else {
 
                 $result = null;
-                var_dump($authority);
                 if ('db' === $authority) {
                     $result = $this->_auth_Model_AuthModel->authenticate(
                         $params['email'], $params['password']
