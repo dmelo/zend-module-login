@@ -37,23 +37,26 @@ class Auth_Model_Auth extends DZend_Model
         return $auth->authenticate($authAdapter);
     }
 
-    public function authenticateFacebook($email, $name)
+    public function authenticateFacebook()
     {
 
-        if (null === $this->_userModel->findByEmail($email)) {
-            $this->_userModel->register($name, $email, '');
-            $userRow = $this->_userModel->findByEmail($email);
-            $userRow->postRegister();
-        }
-
         $authAdapter = new DZend_Auth_Adapter_Facebook();
-        $authAdapter->setIdentity($email);
+        $authAdapter->setIdentity('a');
 
         $auth = Zend_Auth::getInstance();
+
+        $ret = $auth->authenticate($authAdapter);
         if ($auth->hasIdentity()) {
-            $auth->getIdentity();
+            $email = $auth->getIdentity();
+            $name = $authAdapter->getName();
+
+            if (null === $this->_userModel->findByEmail($email)) {
+                $this->_userModel->register($name, $email, '');
+                $userRow = $this->_userModel->findByEmail($email);
+                $userRow->postRegister();
+            }
         }
 
-        return $auth->authenticate($authAdapter);
+        return $ret;
     }
 }

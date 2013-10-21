@@ -40,18 +40,21 @@ class Auth_IndexController extends DZend_Controller_Action
     public function loginAction()
     {
         $form = new Auth_Model_Form_Login();
+        $fbForm = new Auth_Model_Form_FbLogin();
         $params = $this->_request->getParams();
-        $authority = !array_key_exists('authority', $params)
-            || '' == $params['authority'] ? 'db' : $params['authority'];
+        $authority = array_key_exists('authority', $params) ?
+            $params['authority'] : 'db';
         $message = null;
         $this->view->form = $form;
+        $this->view->fbForm = $fbForm;
 
         if (
-            $this->_request->isPost() &&
-            $form->isValid($params)
+            $this->_request->isPost()
+            && ( ( 'db' === $authority && $form->isValid($params) )
+            || ( 'facebook' === $authority && $fbForm->isValid($params) ) )
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
-            $userRow = $this->_userModel->findByEmail($params['email']);
+            $userRow = array_key_exists('email', $params) ? $this->_userModel->findByEmail($params['email']) : null;
             if (
                 null === $userRow && 'db' === $authority
             ) {
@@ -59,7 +62,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     $this->view->t("Email not found. Are you new here?"),
                     'error'
                 );
-            } elseif ('' != $userRow->token && 'db' == $authority) {
+            } elseif (null !== $userRow && '' != $userRow->token && 'db' == $authority) {
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
@@ -78,9 +81,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     );
                 } elseif ('facebook' === $authority) {
                     $result = $this->_auth_Model_AuthModel
-                    ->authenticateFacebook(
-                        $params['email'], $params['name']
-                    );
+                        ->authenticateFacebook();
                 }
 
                 $this->_logger->debug(
