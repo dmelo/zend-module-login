@@ -142,8 +142,8 @@ class Auth_IndexController extends DZend_Controller_Action
 
         if ($this->_userModel->sendActivateAccountEmail($userRow)) {
             $message = array($this->view->t(
-                'User registered. Check your '
-                . 'email to activate your account.'
+                'User registered. Check your account for the activation link.'
+                . ' Please, also check your SPAM.'
             ), 'success');
             if (method_exists($userRow, 'postRegister')) {
                 $userRow->postRegister();
