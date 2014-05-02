@@ -54,7 +54,8 @@ class Auth_IndexController extends DZend_Controller_Action
             || ( 'facebook' === $authority && $fbForm->isValid($params) ) )
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
-            $userRow = array_key_exists('email', $params) ? $this->_userModel->findByEmail($params['email']) : null;
+            $userRow = array_key_exists('email', $params) ?
+                $this->_userModel->findByEmail($params['email']) : null;
             if (
                 null === $userRow && 'db' === $authority
             ) {
@@ -62,7 +63,8 @@ class Auth_IndexController extends DZend_Controller_Action
                     $this->view->t("Email not found. Are you new here?"),
                     'error'
                 );
-            } elseif (null !== $userRow && '' != $userRow->token && 'db' == $authority) {
+            } elseif (null !== $userRow && '' != $userRow->token
+                && 'db' == $authority) {
                 $message = array(
                     $this->view->t(
                         "Acount not activated. Please, check your email"
