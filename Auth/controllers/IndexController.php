@@ -44,16 +44,25 @@ class Auth_IndexController extends DZend_Controller_Action
         $params = $this->_request->getParams();
         $authority = array_key_exists('authority', $params) ?
             $params['authority'] : 'db';
+
+        if (isset($params['code']) && isset($params['state'])) {
+            $authority = 'facebook';
+        }
         $message = null;
         $this->view->form = $form;
         $this->view->fbForm = $fbForm;
 
+        $this->_logger->debug('Auth/IndexController::loginAction A-1');
         if (
-            $this->_request->isPost()
+            ( $this->_request->isPost()
             && ( ( 'db' === $authority && $form->isValid($params) )
             || ( 'facebook' === $authority && $fbForm->isValid($params) ) )
+            ) || (
+            isset($params['code']) && isset($params['state'])
+            )
         ) {
             $this->_logger->debug('Auth/IndexController::loginAction A0');
+            $this->_logger->debug("params: " . print_r($params, true) . '. authority: ' . print_r($authority, true));
             $userRow = array_key_exists('email', $params) ?
                 $this->_userModel->findByEmail($params['email']) : null;
             if (
@@ -80,7 +89,7 @@ class Auth_IndexController extends DZend_Controller_Action
                     $result = $this->_auth_Model_AuthModel->authenticate(
                         $params['email'], $params['password']
                     );
-                } elseif ('facebook' === $authority) {
+                } else /*('facebook' === $authority)*/ {
                     $result = $this->_auth_Model_AuthModel
                         ->authenticateFacebook();
                 }
